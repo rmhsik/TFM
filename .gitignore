@@ -6,4 +6,4 @@ CuFFT/.ipynb_checkpoints/
 PlaneWave/C++/.ipynb_checkpoints/
 PlaneWave/.vscode/
 venv/
-
+*.dat
