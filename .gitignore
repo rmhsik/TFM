@@ -2,5 +2,8 @@ Doc/
 MCWF/venv/
 MCWF/.ipynb_checkpoints/
 PlaneWave/.ipynb_checkpoints/
+CuFFT/.ipynb_checkpoints/
+PlaneWave/C++/.ipynb_checkpoints/
+PlaneWave/.vscode/
 venv/
 
