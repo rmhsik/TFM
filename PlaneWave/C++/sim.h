@@ -23,7 +23,9 @@ class Sim{
         double *q, *p;
         //double **X, **Z;
         double dz, dx;
-        double dq, dp;  
+        double dq, dp;
+
+        double *qshift, *pshift;
 
         fftw_complex *in, *out;
         fftw_plan forward, backward;
@@ -32,8 +34,9 @@ class Sim{
         void initSpace();
         void initMomentum();
         void planFFT(); 
+        void evMomentum(std::complex<double> *in, double t);
         void timeStep();
-        void evMomentum();
+        
     public:
        Sim(double _xmin, double _xmax, double _zmin, double _zmax, double _x0, double _z0, double _q0, double _p0, double _a, double _Nx, double _Nz);
        void writeWavePacket (std::ofstream& file);

@@ -17,4 +17,7 @@ void flatten(std::complex<double> **in, std::complex<double> *out, int Nx, int N
 
 void unflatten(std::complex<double> *in, std::complex<double> **out, int Nx, int Nz);
 
+void normalize(std::complex<double> **in, int Nx, int Nz);
+
+void freqshift(double *in, double *out, int N);
 #endif
