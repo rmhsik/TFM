@@ -38,7 +38,10 @@ class Sim{
         void timeStep();
         
     public:
-       Sim(double _xmin, double _xmax, double _zmin, double _zmax, double _x0, double _z0, double _q0, double _p0, double _a, double _Nx, double _Nz);
+       Sim(double _xmin, double _xmax, double _zmin, 
+           double _zmax, double _x0, double _z0, 
+           double _q0, double _p0, double _a, 
+           double _Nx, double _Nz);
        void writeWavePacket (std::ofstream& file);
        void Evolution();
 };

@@ -8,3 +8,4 @@ PlaneWave/.vscode/
 venv/
 *.dat
 *.png
+tfm
