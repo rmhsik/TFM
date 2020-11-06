@@ -9,3 +9,7 @@ venv/
 *.dat
 *.png
 tfm
+PlaneWave/C++/.vscode/
+PlaneWave/C++/hdf5wrapper.cpp
+PlaneWave/C++/hdf5wrapper.h
+

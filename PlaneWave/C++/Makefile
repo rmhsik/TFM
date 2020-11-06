@@ -28,4 +28,4 @@ $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
 clean:
-	$(RM) *.o *~ $(MAIN) *.dat 	*.png
+	$(RM) *.o *~ $(MAIN) Data/*.dat Images/*.png

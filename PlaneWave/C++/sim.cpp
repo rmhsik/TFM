@@ -1,28 +1,34 @@
 #include <iostream>
+#include <fstream>
 #include <cstring>
 #include <chrono>
 #include "sim.h"
 #include "utils.h"
 
 Sim::Sim(double _xmin, double _xmax, double _zmin,
-         double _zmax, double _x0, double _z0,
-          double _q0, double _p0, 
-         double _a, double _Nx, double _Nz){
+         double _zmax, double _tmin, double _tmax,
+         double _x0, double _z0,
+         double _q0, double _p0, 
+         double _a, int _Nx, int _Nz , int _Nt, int _Nsample){
     
     Nx = _Nx;
     Nz = _Nz;
+    Nt = _Nt;
     xmin = _xmin;
     xmax = _xmax;
     zmin = _zmin;
     zmax = _zmax;
+    tmin = _tmin;
+    tmax = _tmax;
     x0 = _x0;
     z0 = _z0;
     q0 = _q0;
     p0 = _p0;
     a = _a;
+    Nsample = _Nsample;
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    initSpace();
+    initSpaceTime();
     initMomentum();
     initMatrices();
     planFFT();
@@ -36,7 +42,15 @@ Sim::Sim(double _xmin, double _xmax, double _zmin,
     freqshift(q, qshift, Nz);
 }
 
-void Sim::writeWavePacket(std::ofstream& file){
+void Sim::writeWavePacket(int j){
+    char path[60];
+    char step[5];
+    strcpy(path,"Data/Phi");
+    sprintf(step,"%d",j);
+    strcat(path,step);
+    strcat(path,".dat");
+    std::ofstream file;
+    file.open(path);
     waveSqr(Phi, Phi2, Nx, Nz);
     for (int i=0;i<Nz; i++){
         for (int j=0; j<Nx; j++){
@@ -44,23 +58,40 @@ void Sim::writeWavePacket(std::ofstream& file){
         }
         file<<"\n";
     }
+    file.close();
+}
+
+void Sim::Benchmark(){
+    auto t1 = std::chrono::high_resolution_clock::now();
+    timeStep(0.0);
+    auto t2 = std::chrono::high_resolution_clock::now();    
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+    std::cout<<"Estimated time for simulation: " << Nt*duration<<std::endl;
 }
 
 void Sim::Evolution(){
-    auto t1 = std::chrono::high_resolution_clock::now();
-    timeStep();
-    auto t2 = std::chrono::high_resolution_clock::now();    
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-    std::cout<<"Time used for one timestep: " << duration<<std::endl;
+    const int DeltaN = Nt/Nsample;
+    int j = 1;
+    for(int i=0; i<Nt; i++){
+        timeStep(t[i]);
+        //std::cout<<i<<std::endl;
+        if(i%DeltaN == 0){
+            std::cout<<"Saving "<<j<<" of "<< Nsample<<std::endl;
+            writeWavePacket(i);
+            j++;
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////
 
-void Sim::initSpace(){
+void Sim::initSpaceTime(){
     x = (double*)malloc(Nx*sizeof(double));
     z = (double*)malloc(Nz*sizeof(double));
-    linspace(xmin,xmax,Nx,x,&dx);
-    linspace(zmin,zmax,Nz,z,&dz);
+    t = (double*)malloc(Nt*sizeof(double));
+    linspace(xmin, xmax, Nx, x, &dx);
+    linspace(zmin, zmax, Nz, z, &dz);
+    linspace(tmin, tmax, Nt, t, &dt);
 }
 
 void Sim::initMomentum(){
@@ -127,11 +158,11 @@ void Sim::evMomentum(std::complex<double> *in, double t){
 
 }
 
-void Sim::timeStep(){
-    double t = 0.7;
+void Sim::timeStep(double t){
+    //std::cout<<dt<<std::endl;
     flatten(Phi,reinterpret_cast<std::complex<double> *>(in), Nx, Nz);
     fftw_execute(forward);
-    evMomentum(reinterpret_cast<std::complex<double> *>(out),t);
+    evMomentum(reinterpret_cast<std::complex<double> *>(out),dt);
     std::memcpy(in,out,sizeof(fftw_complex)*Nx*Nz);
     fftw_execute(backward);
     unflatten(reinterpret_cast<std::complex<double> *>(out), Phi, Nx, Nz);

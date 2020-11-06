@@ -8,9 +8,10 @@
 
 class Sim{
     private:
-        int Nx, Nz;
+        int Nx, Nz, Nt, Nsample;
         double xmin, xmax;
         double zmin, zmax;
+        double tmin, tmax;
         double x0, z0;
         double q0, p0;
         double a;
@@ -18,31 +19,34 @@ class Sim{
         std::complex<double> **PhiMomentum;
         std::complex<double> **PhiFuture;
         double **Phi2;
-
+        double ***Data;
+        
         double *x, *z;
         double *q, *p;
-        //double **X, **Z;
+        double *t;
         double dz, dx;
         double dq, dp;
-
+        double dt;
         double *qshift, *pshift;
 
         fftw_complex *in, *out;
         fftw_plan forward, backward;
 
         void initMatrices();
-        void initSpace();
+        void initSpaceTime();
         void initMomentum();
         void planFFT(); 
         void evMomentum(std::complex<double> *in, double t);
-        void timeStep();
+        void timeStep(double t);
         
     public:
        Sim(double _xmin, double _xmax, double _zmin, 
-           double _zmax, double _x0, double _z0, 
+           double _zmax, double _tmin, double _tmax,
+           double _x0, double _z0, 
            double _q0, double _p0, double _a, 
-           double _Nx, double _Nz);
-       void writeWavePacket (std::ofstream& file);
+           int _Nx, int _Nz, int _Nt, int _Nsample);
+       void writeWavePacket (int j);
+       void Benchmark();
        void Evolution();
 };
 
