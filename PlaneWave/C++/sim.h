@@ -37,6 +37,7 @@ class Sim{
         void initMomentum();
         void planFFT(); 
         void evMomentum(std::complex<double> *in, double t);
+	void evSpace(std::complex<double> *in, double t);
         void timeStep(double t);
         
     public:

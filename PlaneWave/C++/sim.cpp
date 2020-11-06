@@ -145,26 +145,45 @@ void Sim::planFFT(){
     backward = fftw_plan_dft_2d(Nz, Nx, in, out, FFTW_BACKWARD, FFTW_MEASURE);
 }
 
-void Sim::evMomentum(std::complex<double> *in, double t){
+void Sim::evMomentum(std::complex<double> *in, double dt){
     double m = 1;
     int i, j;
     #pragma omp parallel for private(i, j)
     for(i = 0; i<Nz; i++){
         for (j = 0; j<Nx; j++){
-            in[i*Nx + j] = in[i*Nx+j]*exp(-I*pow(pshift[j],2)/(2*m)*t)*\
-                            exp(-I*pow(qshift[i],2)/(2*m)*t);
+            in[i*Nx + j] = in[i*Nx+j]*exp(-I*pow(pshift[j],2)/(2*m)*dt)*\
+                            exp(-I*pow(qshift[i],2)/(2*m)*dt);
         }
     }
 
 }
 
+void Sim::evSpace(std::complex<double> *in, double dt){
+	double V0 = 0.0;
+	int i,j;
+
+	#pragma omp parallel for private(i, j)
+	for (i = 0; i < Nz; i++){
+		for(j = 0; j < Nx; j++){
+			if((500<i) && (i<1500))
+				in[i*Nx + j] = in[i*Nx + j]*exp(-I*V0*dt);
+
+			in[i*Nx + j] = in[i*Nx + j];
+		}
+	}
+
+}
+
+
 void Sim::timeStep(double t){
     //std::cout<<dt<<std::endl;
     flatten(Phi,reinterpret_cast<std::complex<double> *>(in), Nx, Nz);
+	evSpace(reinterpret_cast<std::complex<double> *>(in),dt/2.0);
     fftw_execute(forward);
     evMomentum(reinterpret_cast<std::complex<double> *>(out),dt);
     std::memcpy(in,out,sizeof(fftw_complex)*Nx*Nz);
     fftw_execute(backward);
+	evSpace(reinterpret_cast<std::complex<double> *>(out),dt/2.0);
     unflatten(reinterpret_cast<std::complex<double> *>(out), Phi, Nx, Nz);
     normalize(Phi,Nx,Nz);
 }

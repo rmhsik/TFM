@@ -11,17 +11,17 @@
 #define ZMAX    10.0
 #define XMIN    -10.0
 #define XMAX    10.0
-#define TMAX    2.0
+#define TMAX    10.0
 #define TMIN    0.0
 #define X0      0.0
 #define Z0      0.0
-#define P0      -6.0
-#define Q0      -10.0
-#define A       2.0
+#define P0      0.0
+#define Q0      -0.0
+#define A       0.5
 #define NSAMPLE 10
 
 int main(){
-    omp_set_num_threads(4);
+    omp_set_num_threads(20);
     //std::ofstream initWave;
     //std::ofstream finalWave;
     //initWave.open("InitialPhi.dat");
