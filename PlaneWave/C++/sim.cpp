@@ -159,13 +159,13 @@ void Sim::evMomentum(std::complex<double> *in, double dt){
 }
 
 void Sim::evSpace(std::complex<double> *in, double dt){
-	double V0 = 0.0;
+	double V0 = 40.0;
 	int i,j;
 
 	#pragma omp parallel for private(i, j)
 	for (i = 0; i < Nz; i++){
 		for(j = 0; j < Nx; j++){
-			if((500<i) && (i<1500))
+			if((1250<i) && (i<1270))
 				in[i*Nx + j] = in[i*Nx + j]*exp(-I*V0*dt);
 
 			in[i*Nx + j] = in[i*Nx + j];
@@ -178,7 +178,7 @@ void Sim::evSpace(std::complex<double> *in, double dt){
 void Sim::timeStep(double t){
     //std::cout<<dt<<std::endl;
     flatten(Phi,reinterpret_cast<std::complex<double> *>(in), Nx, Nz);
-	evSpace(reinterpret_cast<std::complex<double> *>(in),dt/2.0);
+    evSpace(reinterpret_cast<std::complex<double> *>(in),dt/2.0);
     fftw_execute(forward);
     evMomentum(reinterpret_cast<std::complex<double> *>(out),dt);
     std::memcpy(in,out,sizeof(fftw_complex)*Nx*Nz);
