@@ -5,11 +5,22 @@
 void cgaussian(std::complex<double> **phi, double *x, 
                 double *z, double x0, double z0, double a, 
                 double q0, double p0, int Nx, int Nz){
-
-    for(int i=0; i<Nz;i++){
-        for(int j=0; j<Nx;j++){
+    int i,j;
+    #pragma omp parallel for private(i, j)
+    for(i=0; i<Nz;i++){
+        for(j=0; j<Nx;j++){
             phi[i][j] = exp(-(pow((x[j]-x0),2)+pow(z[i]-z0,2))/(2.0*pow(a,2)))*\
                         exp(I*p0*x[j])*exp(I*q0*z[i]);
+        }
+    }
+}
+
+void zeros(std::complex<double> **phi, int Nx, int Nz){
+    int i, j;
+    #pragma omp parallel for private(i, j)
+    for(i=0; i<Nz;i++){
+        for(j=0; j<Nx;j++){
+            phi[i][j] = 0.0;
         }
     }
 }

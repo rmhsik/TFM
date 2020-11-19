@@ -2,8 +2,10 @@
 #include <fstream>
 #include <cstring>
 #include <chrono>
+#include <thread>
 #include "sim.h"
 #include "utils.h"
+#include "evolution.h"
 
 Sim::Sim(double _xmin, double _xmax, double _zmin,
          double _zmax, double _tmin, double _tmax,
@@ -26,6 +28,7 @@ Sim::Sim(double _xmin, double _xmax, double _zmin,
     p0 = _p0;
     a = _a;
     Nsample = _Nsample;
+    m = 1.0;
 
     auto t1 = std::chrono::high_resolution_clock::now();
     initSpaceTime();
@@ -40,40 +43,36 @@ Sim::Sim(double _xmin, double _xmax, double _zmin,
     pshift = (double*)malloc(Nx*sizeof(double));
     freqshift(p, pshift, Nx);
     freqshift(q, qshift, Nz);
+
+    evOperator = new Evolution(this);
 }
 
 void Sim::writeWavePacket(int j){
-    char path[60];
-    char step[5];
-    strcpy(path,"Data/Phi");
-    sprintf(step,"%d",j);
-    strcat(path,step);
-    strcat(path,".dat");
-    std::ofstream file;
-    file.open(path);
-    waveSqr(Phi, Phi2, Nx, Nz);
-    for (int i=0;i<Nz; i++){
-        for (int j=0; j<Nx; j++){
-            file << Phi2[i][j]<<" ";
-        }
-        file<<"\n";
-    }
-    file.close();
+    const char nameG[5] = "PhiG";
+    const char nameE[5] = "PhiE";
+    waveSqr(PhiG, Phi2G, Nx, Nz);
+    waveSqr(PhiE, Phi2E, Nx, Nz);
+    std::thread writeG(&Sim::write2File,this,PhiG,Phi2G,nameG,j);
+    std::thread writeE(&Sim::write2File,this,PhiE,Phi2E,nameE,j);
+    std::thread writeT(&Sim::write2FileT,this,j);
+    writeG.join();
+    writeE.join();
+    writeT.join();
 }
 
 void Sim::Benchmark(){
     auto t1 = std::chrono::high_resolution_clock::now();
-    timeStep(0.0);
+    evOperator->timeStep(0.0);
     auto t2 = std::chrono::high_resolution_clock::now();    
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
     std::cout<<"Estimated time for simulation: " << Nt*duration<<std::endl;
 }
 
-void Sim::Evolution(){
+void Sim::Run(){
     const int DeltaN = Nt/Nsample;
     int j = 1;
     for(int i=0; i<Nt; i++){
-        timeStep(t[i]);
+        evOperator->timeStep(t[i]);
         //std::cout<<i<<std::endl;
         if(i%DeltaN == 0){
             std::cout<<"Saving "<<j<<" of "<< Nsample<<std::endl;
@@ -109,31 +108,57 @@ void Sim::initMomentum(){
 }
 
 void Sim::initMatrices(){
-    Phi = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
-    #pragma omp parallel for
-    for (int i=0;i<Nz;i++){
-        Phi[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
+    int i;
+    PhiG = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        PhiG[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
     }
 
-    PhiMomentum = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
-    #pragma omp parallel for
-    for (int i=0;i<Nz;i++){
-        PhiMomentum[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
+    PhiMomentumG = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        PhiMomentumG[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
     }
 
-    Phi2 = (double**)malloc(Nz*sizeof(double));
-    #pragma omp parallel for
-    for (int i=0;i<Nz;i++){
-        Phi2[i] = (double*)malloc(Nx*sizeof(double));
+    Phi2G = (double**)malloc(Nz*sizeof(double));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        Phi2G[i] = (double*)malloc(Nx*sizeof(double));
     }
 
-    PhiFuture = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
-    #pragma omp parallel for
-    for (int i=0;i<Nz;i++){
-        PhiFuture[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
+    PhiFutureG = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        PhiFutureG[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
     }
 
-    cgaussian(Phi, x, z, x0, z0, a, q0, p0, Nx, Nz);
+    PhiE = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        PhiE[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
+    }
+
+    PhiMomentumE = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        PhiMomentumE[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
+    }
+
+    Phi2E = (double**)malloc(Nz*sizeof(double));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        Phi2E[i] = (double*)malloc(Nx*sizeof(double));
+    }
+
+    PhiFutureE = (std::complex<double>**)malloc(Nz*sizeof(std::complex<double>));
+    #pragma omp parallel for private(i)
+    for (i=0;i<Nz;i++){
+        PhiFutureE[i] = (std::complex<double>*)malloc(Nx*sizeof(std::complex<double>));
+    }
+    
+    cgaussian(PhiG, x, z, x0, z0, a, q0, p0, Nx, Nz);
+    cgaussian(PhiE, x, z, x0, z0, a, 0.0, p0, Nx, Nz);
 }
 
 void Sim::planFFT(){
@@ -145,46 +170,45 @@ void Sim::planFFT(){
     backward = fftw_plan_dft_2d(Nz, Nx, in, out, FFTW_BACKWARD, FFTW_MEASURE);
 }
 
-void Sim::evMomentum(std::complex<double> *in, double dt){
-    double m = 1;
-    int i, j;
-    #pragma omp parallel for private(i, j)
-    for(i = 0; i<Nz; i++){
-        for (j = 0; j<Nx; j++){
-            in[i*Nx + j] = in[i*Nx+j]*exp(-I*pow(pshift[j],2)/(2*m)*dt)*\
-                            exp(-I*pow(qshift[i],2)/(2*m)*dt);
+void Sim::write2File(std::complex<double> **Phi,double **Phi2,
+                    const char *name, int j){
+    char path[60];
+    char step[5];
+    strcpy(path,"Data/");
+    strcat(path,name);
+    strcat(path,"/");
+    strcat(path,name);
+    sprintf(step,"%d",j);
+    strcat(path,step);
+    strcat(path,".dat");
+    std::ofstream file;
+    file.open(path);
+
+    //waveSqr(Phi, Phi2, Nx, Nz);
+    for (int i=0;i<Nz; i++){
+        for (int j=0; j<Nx; j++){
+            file << Phi2[i][j]<<" ";
         }
+        file<<"\n";
     }
-
+    file.close();
 }
 
-void Sim::evSpace(std::complex<double> *in, double dt){
-	double V0 = 40.0;
-	int i,j;
+void Sim::write2FileT(int j){
+    char path[60];
+    char step[5];
+    strcpy(path,"Data/PhiT/PhiT");
+    sprintf(step,"%d",j);
+    strcat(path,step);
+    strcat(path,".dat");
+    std::ofstream file;
+    file.open(path);
 
-	#pragma omp parallel for private(i, j)
-	for (i = 0; i < Nz; i++){
-		for(j = 0; j < Nx; j++){
-			if((1250<i) && (i<1270))
-				in[i*Nx + j] = in[i*Nx + j]*exp(-I*V0*dt);
-
-			in[i*Nx + j] = in[i*Nx + j];
-		}
-	}
-
+    for (int i=0;i<Nz; i++){
+        for (int j=0; j<Nx; j++){
+            file << 0.5*(Phi2G[i][j]+Phi2E[i][j])<<" ";
+        }
+        file<<"\n";
+    }
+    file.close();
 }
-
-
-void Sim::timeStep(double t){
-    //std::cout<<dt<<std::endl;
-    flatten(Phi,reinterpret_cast<std::complex<double> *>(in), Nx, Nz);
-    evSpace(reinterpret_cast<std::complex<double> *>(in),dt/2.0);
-    fftw_execute(forward);
-    evMomentum(reinterpret_cast<std::complex<double> *>(out),dt);
-    std::memcpy(in,out,sizeof(fftw_complex)*Nx*Nz);
-    fftw_execute(backward);
-	evSpace(reinterpret_cast<std::complex<double> *>(out),dt/2.0);
-    unflatten(reinterpret_cast<std::complex<double> *>(out), Phi, Nx, Nz);
-    normalize(Phi,Nx,Nz);
-}
-

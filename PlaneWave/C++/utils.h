@@ -9,6 +9,8 @@ void cgaussian(std::complex<double> **phi, double *x,
                 double *z, double x0, double z0, double a, 
                 double q0, double p0, int Nx, int Nz);
 
+void zeros(std::complex<double> **phi, int Nx, int Nz);
+
 void waveSqr(std::complex<double> **phi,double **phi2, int Nx, int Nz);
 
 void linspace(double a, double b, int N, double *out, double *dz);

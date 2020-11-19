@@ -7,13 +7,13 @@
 CC = g++
 
 # Compiler flags
-CFLAGS = -Wall -O3 -fopenmp
+CFLAGS = -Wall -O3 -fopenmp -std=c++11 -pthread
 
 # External libraries
 LIBS = -lm -lfftw3 -lfftw3_omp
 
 # Source files
-SRCS = main.cpp sim.cpp utils.cpp
+SRCS = main.cpp  utils.cpp evolution.cpp sim.cpp
 OBJS = $(SRCS:.c=.o)
 
 # Executable file
@@ -28,4 +28,5 @@ $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) $(INCLUDES) -c $<  -o $@
 
 clean:
-	$(RM) *.o *~ $(MAIN) Data/*.dat Images/*.png
+	$(RM) *.o *~ $(MAIN) Data/PhiG/*.dat Data/PhiE/*.dat Data/PhiT/*.dat \
+		 Images/PhiG/*.png Images/PhiE/*.png Images/PhiT/*.png
