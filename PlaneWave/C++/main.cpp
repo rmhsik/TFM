@@ -2,23 +2,7 @@
 #include <complex>
 #include <omp.h>
 #include "sim.h"
-
-
-#define NX      4096
-#define NZ      2048
-#define NT      1000
-#define ZMIN    -10.0
-#define ZMAX    10.0
-#define XMIN    -10.0
-#define XMAX    10.0
-#define TMAX    0.7
-#define TMIN    0.0
-#define X0      2.5
-#define Z0      2.5
-#define P0      -6.0
-#define Q0      -10.0
-#define A       0.5
-#define NSAMPLE 10
+#include "config.h"
 
 int main(){
     omp_set_num_threads(4);
@@ -26,10 +10,12 @@ int main(){
     //std::ofstream finalWave;
     //initWave.open("InitialPhi.dat");
     //finalWave.open("FinalPhi.dat");
+    Config conf;
 
-    Sim test(XMIN,XMAX,ZMIN,
-             ZMAX,TMIN,TMAX,X0,Z0,Q0,
-             P0,A,NX,NZ,NT,NSAMPLE);
+    //Sim test(conf.XMIN,conf.XMAX,conf.ZMIN,
+    //         conf.ZMAX,conf.TMIN,conf.TMAX,conf.X0,conf.Z0,conf.Q0,
+    //         conf.P0,conf.A,conf.NX,conf.NZ,conf.NT,conf.NSAMPLE);
+    Sim test(&conf);
     //test.writeWavePacket(initWave);
     test.Run();
     //test.writeWavePacket(finalWave);

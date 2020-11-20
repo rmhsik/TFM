@@ -1,7 +1,7 @@
-#include "potential.h"
 #include "sim.h"
+#include "potential.h"
 
-class Potential: public Sim{
-    
-
+Potential::Potential(Sim *_sim){
+    sim = _sim;
+    omega = _sim->omega;
 }

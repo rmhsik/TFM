@@ -4,6 +4,8 @@
 #include <fftw3.h>
 #include <fstream>
 class Evolution;
+class Potential;
+struct Config;
 //const static std::complex<double> I(std::complex<double>(0,1));
 
 class Sim{
@@ -34,6 +36,8 @@ class Sim{
         double dt;
         double *qshift, *pshift;
 
+        double omega;
+
         fftw_complex *in, *out;
         fftw_plan forward, backward;
 
@@ -45,15 +49,12 @@ class Sim{
         std::complex<double> **PhiFutureE;
 
         Evolution *evOperator;
+        Config *conf;
 
     protected:
         
     public:
-       Sim(double _xmin, double _xmax, double _zmin, 
-           double _zmax, double _tmin, double _tmax,
-           double _x0, double _z0, 
-           double _q0, double _p0, double _a, 
-           int _Nx, int _Nz, int _Nt, int _Nsample);
+       Sim(Config *_conf);
        void writeWavePacket (int j);
        void Benchmark();
        void Run();
@@ -61,6 +62,7 @@ class Sim{
                        const char *name, int j);
         void write2FileT(int j);
        friend class Evolution;
+       friend class Potential;
 };
 
 

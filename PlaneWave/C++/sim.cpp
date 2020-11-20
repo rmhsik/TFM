@@ -6,29 +6,27 @@
 #include "sim.h"
 #include "utils.h"
 #include "evolution.h"
+#include "config.h"
 
-Sim::Sim(double _xmin, double _xmax, double _zmin,
-         double _zmax, double _tmin, double _tmax,
-         double _x0, double _z0,
-         double _q0, double _p0, 
-         double _a, int _Nx, int _Nz , int _Nt, int _Nsample){
+Sim::Sim(Config *_conf){
     
-    Nx = _Nx;
-    Nz = _Nz;
-    Nt = _Nt;
-    xmin = _xmin;
-    xmax = _xmax;
-    zmin = _zmin;
-    zmax = _zmax;
-    tmin = _tmin;
-    tmax = _tmax;
-    x0 = _x0;
-    z0 = _z0;
-    q0 = _q0;
-    p0 = _p0;
-    a = _a;
-    Nsample = _Nsample;
-    m = 1.0;
+    Nx = _conf->NX;
+    Nz = _conf->NZ;
+    Nt = _conf->NT;
+    xmin = _conf->XMIN;
+    xmax = _conf->XMAX;
+    zmin = _conf->ZMIN;
+    zmax = _conf->ZMAX;
+    tmin = _conf->TMIN;
+    tmax = _conf->TMAX;
+    x0 = _conf->X0;
+    z0 = _conf->Z0;
+    q0 = _conf->Q0;
+    p0 = _conf->P0;
+    a = _conf->A;
+    Nsample = _conf->NSAMPLE;
+    m = _conf->M;
+    omega = _conf->OMEGA;
 
     auto t1 = std::chrono::high_resolution_clock::now();
     initSpaceTime();
@@ -45,6 +43,7 @@ Sim::Sim(double _xmin, double _xmax, double _zmin,
     freqshift(q, qshift, Nz);
 
     evOperator = new Evolution(this);
+    conf = _conf;
 }
 
 void Sim::writeWavePacket(int j){
