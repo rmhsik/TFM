@@ -35,7 +35,6 @@ class Sim{
         double dq, dp;
         double dt;
         double *qshift, *pshift;
-
         double omega;
 
         fftw_complex *in, *out;
@@ -48,9 +47,9 @@ class Sim{
         std::complex<double> **PhiMomentumE;
         std::complex<double> **PhiFutureE;
 
-        Evolution *evOperator;
         Config *conf;
-
+        Evolution *evOperator;
+		Potential *potOperator;
     protected:
         
     public:

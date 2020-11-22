@@ -13,7 +13,7 @@ CFLAGS = -Wall -O3 -fopenmp -std=c++11 -pthread
 LIBS = -lm -lfftw3 -lfftw3_omp
 
 # Source files
-SRCS = main.cpp  utils.cpp evolution.cpp sim.cpp
+SRCS = main.cpp utils.cpp evolution.cpp potential.cpp sim.cpp
 OBJS = $(SRCS:.c=.o)
 
 # Executable file

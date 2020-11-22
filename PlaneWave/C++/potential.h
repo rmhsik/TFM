@@ -5,8 +5,9 @@ class Sim;
 class Potential{
     private:
         double omega;
+	double z0;
         Sim *sim;
-        double envelope(double x, double z, double t);
+        double envelope(double x, double z);
         
     public:
         Potential(Sim *_sim);

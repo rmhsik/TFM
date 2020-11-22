@@ -8,8 +8,8 @@ struct Config{
     double ZMIN = -4*WAVELENGTH;
     double ZMAX = 4*WAVELENGTH;
     double XMIN = 0.0;
-    double XMAX = 0;
-    double TMAX = 4*WAVELENGTH;
+    double XMAX = 4*WAVELENGTH;
+    double TMAX = 1000;
     double TMIN = 0.0;
     double X0 = 0;
     double Z0 = -0.5E-5;

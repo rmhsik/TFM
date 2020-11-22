@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "evolution.h"
 #include "config.h"
+#include "potential.h"
 
 Sim::Sim(Config *_conf){
     
@@ -44,6 +45,7 @@ Sim::Sim(Config *_conf){
 
     evOperator = new Evolution(this);
     conf = _conf;
+	potOperator = new Potential(this);
 }
 
 void Sim::writeWavePacket(int j){
