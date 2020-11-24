@@ -27,6 +27,7 @@ Sim::Sim(Config *_conf){
     a = _conf->A;
     Nsample = _conf->NSAMPLE;
     m = _conf->M;
+    l = _conf->L;
     omega = _conf->OMEGA;
 
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -159,7 +160,7 @@ void Sim::initMatrices(){
     }
     
     cgaussian(PhiG, x, z, x0, z0, a, q0, p0, Nx, Nz);
-    cgaussian(PhiE, x, z, x0, z0, a, 0.0, p0, Nx, Nz);
+    cgaussian(PhiE, x, z, x0, z0, a, 0.0, 0.0, Nx, Nz);
 }
 
 void Sim::planFFT(){

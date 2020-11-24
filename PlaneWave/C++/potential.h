@@ -4,7 +4,7 @@ class Sim;
 
 class Potential{
     private:
-        double omega;
+        double l, omega;
 	double z0;
         Sim *sim;
         double envelope(double x, double z);

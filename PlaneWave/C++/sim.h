@@ -35,7 +35,7 @@ class Sim{
         double dq, dp;
         double dt;
         double *qshift, *pshift;
-        double omega;
+        double l, omega;
 
         fftw_complex *in, *out;
         fftw_plan forward, backward;

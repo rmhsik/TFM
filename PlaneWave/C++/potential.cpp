@@ -5,11 +5,11 @@
 Potential::Potential(Sim *_sim){
     sim = _sim;
     omega = _sim->omega;
-    z0 = _sim->z0;
+    l = _sim->l;
 }
 
 double Potential::envelope(double x, double z){
-	if ((0.0<z) && (z<z0)){
+	if ((0.0<z) && (z<l)){
 		return 1.0;
 	}
 	else{
