@@ -1,0 +1,2 @@
+Numbers in filneame must be in order
+ffmpeg -r 50 -i 'RWAGaussian/RWAGaussian%d.png' -c:v libx264 -pix_fmt yuv420p out.mp4 -y

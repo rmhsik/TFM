@@ -28,6 +28,7 @@ Sim::Sim(Config *_conf){
     Nsample = _conf->NSAMPLE;
     m = _conf->M;
     l = _conf->L;
+    k = _conf->K;
     omega = _conf->OMEGA;
 
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -74,13 +75,13 @@ void Sim::Run(){
     const int DeltaN = Nt/Nsample;
     int j = 1;
     for(int i=0; i<Nt; i++){
-        evOperator->timeStep(t[i]);
-        //std::cout<<i<<std::endl;
-        if(i%DeltaN == 0){
+         if(i%DeltaN == 0){
             std::cout<<"Saving "<<j<<" of "<< Nsample<<std::endl;
             writeWavePacket(i);
             j++;
         }
+        evOperator->timeStep(t[i]);
+        //std::cout<<i<<std::endl;
     }
 }
 
@@ -160,7 +161,7 @@ void Sim::initMatrices(){
     }
     
     cgaussian(PhiG, x, z, x0, z0, a, q0, p0, Nx, Nz);
-    cgaussian(PhiE, x, z, x0, z0, a, 0.0, 0.0, Nx, Nz);
+    zeros(PhiE, Nx, Nz);
 }
 
 void Sim::planFFT(){

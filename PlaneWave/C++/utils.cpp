@@ -61,7 +61,7 @@ void unflatten(std::complex<double> *in, std::complex<double> **out, int Nx, int
 void normalize(std::complex<double> **in, std::complex<double> **out, int Nx, int Nz){
     for(int i=0; i < Nz; i++){
         for(int j = 0; j<Nx; j++){
-            out[i][j] /= (Nx*Nz);
+            out[i][j] = in[i][j]/((double)Nx*(double)Nz);
         }
     }
 }
